@@ -1,0 +1,99 @@
+<style>
+  #itemForm {
+    text-align: center;
+  }
+
+  #itemForm label {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  #itemForm input[type="text"],
+  #itemForm button[type="submit"] {
+    margin-bottom: 10px;
+  }
+</style>
+<%- include ("./header.ejs") %>
+
+<form id="itemForm" method="post">
+  <label>Edit Item_R</label>
+  <div class="form-group">
+    <input type="text" id="name_input" name="name" placeholder="Enter Name" required />
+  </div>
+  <div class="form-group">
+    <input type="text" id="catg_input" name="catg" placeholder="Enter Category" required />
+  </div>
+  <div class="form-group">
+    <button type="submit">Submit</button>
+  </div>
+  <div id="error_message"></div>
+  <div id="success_message"></div>
+</form>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    let itemId;
+    const urlParts = window.location.href.split('/');
+    itemId = urlParts[urlParts.length - 1];
+
+    fetch('/P/item/' + itemId)
+      .then(function(response) {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Error retrieving item data');
+        }
+      })
+      .then(function(response) {
+        console.log(response.result);
+        if (response) {
+          const itemData = response.result;
+          console.log('Item Data:', itemData);
+          $('#name_input').val(itemData.name);
+          $('#catg_input').val(itemData.catg);
+        } else {
+          console.error('Error retrieving item data:', response.message);
+        }
+      })
+      .catch(function(error) {
+        console.error('Error retrieving item data:', itemId, error);
+        alert('Error retrieving item data. Please try again.');
+      });
+
+    $('#itemForm').submit(function(event) {
+      event.preventDefault();
+      let name = $('#name_input').val();
+      let catg = $('#catg_input').val();
+
+      let payload = JSON.stringify({
+        name: name,
+        catg: catg
+      });
+
+      fetch('/P/edit/' + itemId, {
+        method: 'PUT',
+        body: payload,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+        .then(function(response) {
+          if (response.ok) {
+            window.location.href = '/ItemList';
+            $('#error_message').empty();
+            $('#success_message').text('Updated successfully!');
+            $('#itemForm')[0].reset();
+          } else {
+            throw new Error('Error editing item');
+          }
+        })
+        .catch(function(error) {
+          console.error('Error editing item:', itemId, error);
+          alert('Error editing item. Please try again.');
+        });
+    });
+  });
+</script>
+<%- include ("./footer.ejs") %>

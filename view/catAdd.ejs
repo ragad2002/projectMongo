@@ -1,0 +1,56 @@
+<head>
+
+</head>
+<%- include ("./header.ejs") %>
+<main>
+  <h3>Production Line Control</h3>
+  
+  <form id="durationForm" method="post">
+    <label for="durationInput">Phase Duration (in seconds):</label>
+  
+    <input type="number" id="duration_input" name="duration" required>
+    <button type="submit">Save</button>
+    <div id="error_message"></div> 
+    <div id="success_message"></div>
+  </form>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#durationForm').submit(function(event) {
+        event.preventDefault();
+        let duration = $('#duration_input').val();
+
+        if (duration <= 2) {
+          alert('Duration must be greater than 2');
+          return;
+        }
+        let payload = JSON.stringify({ duration });
+
+        // Send the form data using fetch
+        fetch('/api/phase-durations', {
+          method: 'POST',
+          body: payload,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(function(response) {
+          if (response.ok) {
+            console.log('Duration submitted');
+            $('#error_message').empty(); 
+            $('#success_message').text('Duration submitted successfully!');
+            $('#durationForm')[0].reset(); 
+          } else {
+            throw new Error('Error submitting duration');
+          }
+        })
+        .catch(function(error) {
+          console.error('Error submitting duration:', error);
+          $('#error_message').text('Error submitting duration');
+        });
+      });
+
+
+    });
+  </script>
+</main>
